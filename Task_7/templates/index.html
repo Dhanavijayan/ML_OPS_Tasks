@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Theft Rate Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="backdrop backdrop-one"></div>
+  <div class="backdrop backdrop-two"></div>
+
+  <main class="page-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <p class="eyebrow">Random Forest Prediction UI</p>
+        <h1>Predict theft risk from supermarket activity.</h1>
+        <p class="lead">
+          Enter operational signals from a store shift and get an instant Random Forest prediction for the theft level.
+        </p>
+        <div class="hero-metrics">
+          <div>
+            <span>Model</span>
+            <strong>Random Forest</strong>
+          </div>
+          <div>
+            <span>Target</span>
+            <strong>Theft Level</strong>
+          </div>
+          <div>
+            <span>Inputs</span>
+            <strong>5 features</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-grid">
+        <section class="panel form-panel">
+          <div class="panel-header">
+            <h2>Prediction Form</h2>
+            <p>Fill in the shift details and run the model.</p>
+          </div>
+
+          {% if error_message %}
+          <div class="alert alert-error">{{ error_message }}</div>
+          {% endif %}
+
+          <form method="POST" class="prediction-form">
+            <div class="field-grid">
+              <label>
+                <span>Foot Traffic</span>
+                <input type="number" name="foot_traffic" min="0" step="1" placeholder="e.g. 240" required />
+              </label>
+              <label>
+                <span>Staff Count</span>
+                <input type="number" name="staff_count" min="0" step="1" placeholder="e.g. 6" required />
+              </label>
+              <label>
+                <span>Hour</span>
+                <input type="number" name="hour" min="0" max="23" step="1" placeholder="e.g. 15" required />
+              </label>
+              <label>
+                <span>High Value Items</span>
+                <input type="number" name="high_value_items" min="0" step="1" placeholder="e.g. 75" required />
+              </label>
+              <label class="full-width">
+                <span>Shrinkage INR</span>
+                <input type="number" name="shrinkage_inr" min="0" step="1" placeholder="e.g. 500" required />
+              </label>
+            </div>
+            <button type="submit" class="primary-btn">Predict Theft Level</button>
+          </form>
+        </section>
+
+        <section class="panel result-panel">
+          <div class="panel-header">
+            <h2>Prediction Result</h2>
+            <p>Model output and class probabilities appear here.</p>
+          </div>
+
+          {% if prediction %}
+          <div class="prediction-badge">{{ prediction }}</div>
+
+          <div class="probability-list">
+            {% for item in probabilities %}
+            <div class="prob-row">
+              <div class="prob-labels">
+                <span>{{ item.label }}</span>
+                <strong>{{ "%.2f"|format(item.value * 100) }}%</strong>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" style="width: {{ item.value * 100 }}%;"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">
+            <h3>No prediction yet</h3>
+            <p>Submit the form to see the predicted theft level and probability breakdown.</p>
+          </div>
+          {% endif %}
+        </section>
+      </div>
+
+      {% if entered_values %}
+      <section class="panel summary-panel">
+        <div class="panel-header">
+          <h2>Submitted Values</h2>
+          <p>Review the latest inputs sent to the model.</p>
+        </div>
+        <div class="summary-grid">
+          {% for key, value in entered_values.items() %}
+          <div class="summary-item">
+            <span>{{ key.replace('_', ' ')|title }}</span>
+            <strong>{{ value }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
